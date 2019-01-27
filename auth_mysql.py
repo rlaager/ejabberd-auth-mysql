@@ -97,20 +97,12 @@ def ejabberd_in():
 def ejabberd_out(output):
 	logging.debug("Ejabberd gets: %s" % output)
 
-	token = genanswer(output)
+	token = struct.pack('>hh', 2, int(bool(output)))
 
 	logging.debug("sent bytes: %#x %#x %#x %#x" % (ord(token[0]), ord(token[1]), ord(token[2]), ord(token[3])))
 
 	sys.stdout.write(token)
 	sys.stdout.flush()
-
-
-def genanswer(answer):
-	answer = 0
-	if answer:
-		answer = 1
-	token = struct.pack('>hh', 2, answer)
-	return token
 
 
 def password_hash(password, old_password=None):
