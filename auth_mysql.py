@@ -1,10 +1,10 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 #External auth script for ejabberd that enable auth against MySQL db with
 #use of custom fields and table. It works with hashed passwords.
 #Inspired by Lukas Kolbe script.
 #Released under GNU GPLv3
-#Requires Python 2
+#Requires Python 3
 #Author: iltl. Contact: iltl@free.fr
 #Author: Candid Dauth <cdauth@cdauth.eu>
 #Version: 2015-12-20
@@ -77,7 +77,7 @@ class EjabberdInputError(Exception):
 def ejabberd_in():
 	logging.debug("trying to read 2 bytes from ejabberd:")
 
-	input_length = sys.stdin.read(2)
+	input_length = sys.stdin.buffer.read(2)
 
 	if len(input_length) is not 2:
 		logging.debug("ejabberd sent us wrong things!")
@@ -88,7 +88,7 @@ def ejabberd_in():
 	(size,) = struct.unpack('>h', input_length)
 	logging.debug('size of data: %i'%size)
 
-	income=sys.stdin.read(size).split(':', 3)
+	income=sys.stdin.read(size)
 	logging.debug("incoming data: %s"%income)
 
 	return income
@@ -99,10 +99,10 @@ def ejabberd_out(bool):
 
 	token = genanswer(bool)
 
-	logging.debug("sent bytes: %#x %#x %#x %#x" % (ord(token[0]), ord(token[1]), ord(token[2]), ord(token[3])))
+	logging.debug("sent bytes: %#x %#x %#x %#x" % (token[0], token[1], token[2], token[3]))
 
-	sys.stdout.write(token)
-	sys.stdout.flush()
+	sys.stdout.buffer.write(token)
+	sys.stdout.buffer.flush()
 
 
 def genanswer(bool):
@@ -211,14 +211,12 @@ while True:
 	logging.debug("start of infinite loop")
 
 	try:
-		ejab_request = ejabberd_in()
+		ejab_request = ejabberd_in().split(':', 3)
 	except EOFError:
 		break
 	except Exception as e:
 		logging.exception("Exception occured while reading stdin")
 		raise
-
-	logging.debug('operation: %s' % (":".join(ejab_request)))
 
 	op_result = False
 	try:
